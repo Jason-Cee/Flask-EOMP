@@ -4,7 +4,6 @@ import sqlite3
 
 from flask_jwt import JWT, jwt_required, current_identity
 from flask_cors import CORS
-import datetime
 
 
 class User(object):
@@ -142,13 +141,13 @@ def get_products():
     return jsonify(response)
 
 
-@app.route('/get-products-one/<int:product_id>/')
-def view_one(product_id):
+@app.route('/get-products-one/<int:id>/')
+def view_one(id):
     response = {}
 
     with sqlite3.connect("sale.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM items where product_id=?", str(product_id))
+        cursor.execute("SELECT * FROM items where id=?", str(id))
         product = cursor.fetchone()
 
     response['status_code'] = 200
@@ -156,8 +155,8 @@ def view_one(product_id):
     return jsonify(response)
 
 
-@app.route('/edit-product/<int:product_id>/', methods=["PUT"])
-def updating_products(product_id):
+@app.route('/edit-product/<int:id>/', methods=["PUT"])
+def updating_products(id):
     response = {}
 
     if request.method == "PUT":
@@ -171,8 +170,8 @@ def updating_products(product_id):
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET title =? WHERE product_id=?",
-                                   (put_data["title"], product_id))
+                    cursor.execute("UPDATE items SET title =? WHERE id=?",
+                                   (put_data["title"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -182,8 +181,8 @@ def updating_products(product_id):
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET category =? WHERE product_id=?", (put_data["category"],
-                                                                                      product_id))
+                    cursor.execute("UPDATE items SET category =? WHERE id=?", (put_data["category"],
+                                                                                id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -193,8 +192,8 @@ def updating_products(product_id):
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET price =? WHERE product_id=?",
-                                   (put_data["price"], product_id))
+                    cursor.execute("UPDATE items SET price =? WHERE id=?",
+                                   (put_data["price"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -204,8 +203,8 @@ def updating_products(product_id):
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET description =? WHERE product_id=?",
-                                   (put_data["description"], product_id))
+                    cursor.execute("UPDATE items SET description =? WHERE id=?",
+                                   (put_data["description"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -213,12 +212,12 @@ def updating_products(product_id):
     return response
 
 
-@app.route("/delete-product/<int:product_id>")
-def delete_products(product_id):
+@app.route("/delete-product/<int:id>")
+def delete_products(id):
     response = {}
     with sqlite3.connect("sale.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM items WHERE product_id=" + str(product_id))
+        cursor.execute("DELETE FROM items WHERE id=" + str(id))
         conn.commit()
         response['status_code'] = 200
         response['message'] = "Product deleted successfully."
