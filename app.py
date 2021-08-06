@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import hmac
 import sqlite3
-
+from flask_mail import Mail, Message
 from flask_jwt import JWT, jwt_required, current_identity
 from flask_cors import CORS
 
@@ -70,6 +70,13 @@ def identity(payload):
 
 app = Flask(__name__)
 app.debug = True
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'jasondoescoding@gmail.com'
+app.config['MAIL_PASSWORD'] = 'JayoCee07'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
 app.config['SECRET_KEY'] = 'super-secret'
 CORS(app)
 
@@ -90,6 +97,7 @@ def user_registration():
         last_name = request.form['last_name']
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']
 
         with sqlite3.connect("sale.db") as conn:
             cursor = conn.cursor()
@@ -101,7 +109,11 @@ def user_registration():
             conn.commit()
             response["message"] = "success"
             response["status_code"] = 200
-        return response
+            if response["status_code"] == 200:
+                msg = Message('Registration Successful', sender='jasondoescoding@gmail.com', recipients=[email])
+                msg.body = "Welcome '" + str(first_name) + "', You Have Registered Successfully"
+                mail.send(msg)
+                return "Email Sent"
 
 
 @app.route('/add-products/', methods=["POST"])
@@ -156,58 +168,55 @@ def view_one(id):
 
 
 @app.route('/edit-product/<int:id>/', methods=["PUT"])
-def updating_products(id):
+def edit_product(id):
     response = {}
 
     if request.method == "PUT":
         with sqlite3.connect('sale.db') as conn:
-            print(request.json)
             incoming_data = dict(request.json)
             put_data = {}
 
             if incoming_data.get("title") is not None:
                 put_data["title"] = incoming_data.get("title")
+                with sqlite3.connect('sale.db') as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE items SET title =? WHERE id=?", (put_data["title"], id))
+                    conn.commit()
+                    response['message'] = "Update to title was successful"
+                    response['status_code'] = 200
+
+            if incoming_data.get("category") is not None:
+                put_data['category'] = incoming_data.get('category')
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET title =? WHERE id=?",
-                                   (put_data["title"], id))
+                    cursor.execute("UPDATE items SET category =? WHERE id=?", (put_data["category"], id))
                     conn.commit()
-                    response['message'] = "Update was successful"
-                    response['status_code'] = 200
 
-            elif incoming_data.get("category") is not None:
-                put_data["category"] = incoming_data.get("category")
+                    response["category"] = "Update to category was successful"
+                    response["status_code"] = 200
+
+            if incoming_data.get("price") is not None:
+                put_data['price'] = incoming_data.get('price')
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET category =? WHERE id=?", (put_data["category"],
-                                                                                id))
+                    cursor.execute("UPDATE items SET price =? WHERE id=?", (put_data["price"], id))
                     conn.commit()
-                    response['message'] = "Update was successful"
-                    response['status_code'] = 200
 
-            elif incoming_data.get("price") is not None:
-                put_data["price"] = incoming_data.get("price")
+                    response["price"] = "Update to price was successful"
+                    response["status_code"] = 200
+
+            if incoming_data.get("description") is not None:
+                put_data['description'] = incoming_data.get('description')
 
                 with sqlite3.connect('sale.db') as conn:
                     cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET price =? WHERE id=?",
-                                   (put_data["price"], id))
+                    cursor.execute("UPDATE items SET description =? WHERE id=?", (put_data["description"], id))
                     conn.commit()
-                    response['message'] = "Update was successful"
-                    response['status_code'] = 200
 
-            elif incoming_data.get("description") is not None:
-                put_data["description"] = incoming_data.get("description")
-
-                with sqlite3.connect('sale.db') as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("UPDATE items SET description =? WHERE id=?",
-                                   (put_data["description"], id))
-                    conn.commit()
-                    response['message'] = "Update was successful"
-                    response['status_code'] = 200
+                    response["description"] = "Update to description successful"
+                    response["status_code"] = 200
 
     return response
 
@@ -228,4 +237,4 @@ if __name__ == "__main__":
     app.debug = True
     app.run(port=5002)
 
-# https://dashboard.heroku.com/apps/limitless-citadel-50663/deploy/github
+# https://limitless-citadel-50663.herokuapp.com
