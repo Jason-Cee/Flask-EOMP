@@ -1,3 +1,5 @@
+# All IMPORTS NEEDED
+
 from flask import Flask, request, jsonify
 import hmac
 import sqlite3
@@ -6,6 +8,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 from flask_cors import CORS
 
 
+# CREATING MY CLASS FUNCTION
 class User(object):
     def __init__(self, id, username, password):
         self.id = id
@@ -13,6 +16,7 @@ class User(object):
         self.password = password
 
 
+# FETCHING USERS IN MY USER TABLE
 def fetch_users():
     with sqlite3.connect('sale.db') as conn:
         cursor = conn.cursor()
@@ -26,6 +30,7 @@ def fetch_users():
     return new_data
 
 
+# CREATING USER TABLE
 def init_user_table():
     conn = sqlite3.connect('sale.db')
     print("Opened database successfully")
@@ -39,6 +44,7 @@ def init_user_table():
     conn.close()
 
 
+# CREATING PRODUCT TABLE
 def init_item_table():
     with sqlite3.connect('sale.db') as conn:
         conn.execute("CREATE TABLE IF NOT EXISTS items(id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -57,6 +63,7 @@ username_table = {u.username: u for u in users}
 userid_table = {u.id: u for u in users}
 
 
+# VERIFICATION
 def authenticate(username, password):
     user = username_table.get(username, None)
     if user and hmac.compare_digest(user.password.encode('utf-8'), password.encode('utf-8')):
@@ -84,10 +91,12 @@ jwt = JWT(app, authenticate, identity)
 
 
 @app.route('/protected/')
+@jwt_required()
 def protected():
     return '%s' % current_identity
 
 
+# USERS REGISTRATION
 @app.route('/registration/', methods=["POST"])
 def user_registration():
     response = {}
@@ -116,7 +125,9 @@ def user_registration():
                 return "Email Sent"
 
 
+# ADDING PRODUCTS INTO PRODUCT TABLE
 @app.route('/add-products/', methods=["POST"])
+@jwt_required()
 def add_products():
     response = {}
 
@@ -139,7 +150,9 @@ def add_products():
         return response
 
 
+# DISPLAYING PRODUCTS
 @app.route('/get-products/', methods=["GET"])
+@jwt_required()
 def get_products():
     response = {}
     with sqlite3.connect("sale.db") as conn:
@@ -153,6 +166,7 @@ def get_products():
     return jsonify(response)
 
 
+# DISPLAYING A INDIVIDUAL PRODUCT
 @app.route('/get-products-one/<int:id>/')
 def view_one(id):
     response = {}
@@ -167,7 +181,9 @@ def view_one(id):
     return jsonify(response)
 
 
+# EDITING PRODUCTS (UPDATE)
 @app.route('/edit-product/<int:id>/', methods=["PUT"])
+@jwt_required()
 def edit_product(id):
     response = {}
 
@@ -221,7 +237,9 @@ def edit_product(id):
     return response
 
 
+# DELETING PRODUCTS
 @app.route("/delete-product/<int:id>")
+@jwt_required()
 def delete_products(id):
     response = {}
     with sqlite3.connect("sale.db") as conn:
@@ -233,8 +251,11 @@ def delete_products(id):
     return response
 
 
+# RUN CODE
 if __name__ == "__main__":
     app.debug = True
     app.run(port=5002)
 
+
+# DEPLOYED SITE LINK BELOW
 # https://limitless-citadel-50663.herokuapp.com
