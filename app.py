@@ -6,6 +6,8 @@ import sqlite3
 from flask_mail import Mail, Message
 from flask_jwt import JWT, jwt_required, current_identity
 from flask_cors import CORS
+import datetime
+
 
 
 # CREATING MY CLASS FUNCTION
@@ -77,6 +79,7 @@ def identity(payload):
 
 app = Flask(__name__)
 app.debug = True
+app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=2)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'jasondoescoding@gmail.com'
