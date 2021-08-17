@@ -4,10 +4,9 @@ from flask import Flask, request, jsonify
 import hmac
 import sqlite3
 from flask_mail import Mail, Message
-from flask_jwt import JWT, jwt_required, current_identity
+from flask_jwt import current_identity
 from flask_cors import CORS
 import datetime
-
 
 
 # CREATING MY CLASS FUNCTION
@@ -79,7 +78,7 @@ def identity(payload):
 
 app = Flask(__name__)
 app.debug = True
-app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=2)
+# app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=2)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'jasondoescoding@gmail.com'
@@ -90,11 +89,11 @@ mail = Mail(app)
 app.config['SECRET_KEY'] = 'super-secret'
 CORS(app)
 
-jwt = JWT(app, authenticate, identity)
+# jwt = JWT(app, authenticate, identity)
 
 
 @app.route('/protected/')
-@jwt_required()
+# @jwt_required()
 def protected():
     return '%s' % current_identity
 
@@ -130,7 +129,7 @@ def user_registration():
 
 # ADDING PRODUCTS INTO PRODUCT TABLE
 @app.route('/add-products/', methods=["POST"])
-@jwt_required()
+# @jwt_required()
 def add_products():
     response = {}
 
@@ -155,7 +154,7 @@ def add_products():
 
 # DISPLAYING PRODUCTS
 @app.route('/get-products/', methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def get_products():
     response = {}
     with sqlite3.connect("sale.db") as conn:
@@ -186,7 +185,7 @@ def view_one(id):
 
 # EDITING PRODUCTS (UPDATE)
 @app.route('/edit-product/<int:id>/', methods=["PUT"])
-@jwt_required()
+# @jwt_required()
 def edit_product(id):
     response = {}
 
@@ -242,7 +241,7 @@ def edit_product(id):
 
 # DELETING PRODUCTS
 @app.route("/delete-product/<int:id>")
-@jwt_required()
+# @jwt_required()
 def delete_products(id):
     response = {}
     with sqlite3.connect("sale.db") as conn:
